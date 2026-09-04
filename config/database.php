@@ -112,6 +112,20 @@ return [
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
+        'inventory' => [
+            'driver' => 'mysql',
+            'host' => env('INVENTORY_DB_HOST', '127.0.0.1'),
+            'port' => env('INVENTORY_DB_PORT', '3306'),
+            'database' => env('INVENTORY_DB_DATABASE', 'inventory'),
+            'username' => env('INVENTORY_DB_USERNAME', ''),
+            'password' => env('INVENTORY_DB_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => false, // legacy table has loose typing/blank-string dates
+        ],
+
+
     ],
 
     /*

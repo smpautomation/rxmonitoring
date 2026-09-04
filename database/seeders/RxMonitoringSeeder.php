@@ -2,24 +2,20 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use App\Models\Area;
 use App\Models\Oven;
 use App\Models\ProductModel;
 use Illuminate\Database\Seeder;
 
-class DatabaseSeeder extends Seeder
+class RxMonitoringSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
         $areas = [
-            ['code' => 'NCP2', 'name' => 'Non Coated Plant 2'],
-            ['code' => 'NCP3', 'name' => 'Non Coated Plant 3'],
-            ['code' => 'NCP8', 'name' => 'Non Coated Plant 8'],
-            ['code' => 'GLASSCLOTH', 'name' => 'Glass Cloth'],
+            ['code' => 'NCP2', 'name' => 'NCP Line 2'],
+            ['code' => 'NCP3', 'name' => 'NCP Line 3'],
+            ['code' => 'NCP8', 'name' => 'NCP Line 8'],
+            ['code' => 'GLASSCLOTH', 'name' => 'Glass Cloth Lamination'],
         ];
 
         foreach ($areas as $data) {
@@ -87,4 +83,5 @@ class DatabaseSeeder extends Seeder
             }
         }
     }
+
 }

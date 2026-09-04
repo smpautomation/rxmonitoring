@@ -1,0 +1,214 @@
+/* RX Monitoring — design system
+   ------------------------------------------------------------------
+   Subject: a shop-floor kiosk beside an industrial curing oven, used by
+   operators in gloves who scan badge QR codes. This is a control panel,
+   not a SaaS dashboard — the palette, type, and motion all come from that.
+*/
+
+/* @import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap'); */
+
+[data-rx-theme='dark'] {
+  --rx-bg: #1a1d1f;
+  --rx-bg-glow: radial-gradient(ellipse 900px 500px at 15% -10%, rgba(255, 122, 26, 0.10), transparent),
+                radial-gradient(ellipse 700px 500px at 100% 0%, rgba(47, 182, 196, 0.08), transparent);
+  --rx-panel: #232629;
+  --rx-panel-raised: #2b2f33;
+  --rx-border: #33383d;
+  --rx-border-soft: #2a2e32;
+  --rx-text: #edeae2;
+  --rx-text-dim: #9ba0a6;
+  --rx-text-faint: #676c72;
+
+  --rx-heat: #ff7a1a;
+  --rx-heat-glow: rgba(255, 122, 26, 0.38);
+  --rx-heat-ink: #1a1d1f;
+
+  --rx-cool: #2fb6c4;
+  --rx-cool-glow: rgba(47, 182, 196, 0.32);
+
+  --rx-done: #4e9a5d;
+  --rx-done-glow: rgba(78, 154, 93, 0.3);
+
+  --rx-warn: #f2c230;
+  --rx-danger: #e5484d;
+  --rx-danger-glow: rgba(229, 72, 77, 0.3);
+
+  --rx-locked: #46494d;
+  --rx-locked-text: #6d7176;
+
+  --rx-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+[data-rx-theme='light'] {
+  --rx-bg: #f1eee6;
+  --rx-bg-glow: radial-gradient(ellipse 900px 500px at 15% -10%, rgba(232, 93, 19, 0.07), transparent),
+                radial-gradient(ellipse 700px 500px at 100% 0%, rgba(29, 142, 154, 0.06), transparent);
+  --rx-panel: #ffffff;
+  --rx-panel-raised: #fbfaf6;
+  --rx-border: #ddd8cc;
+  --rx-border-soft: #e6e2d6;
+  --rx-text: #1b1d1f;
+  --rx-text-dim: #62666b;
+  --rx-text-faint: #8a8e92;
+
+  --rx-heat: #e85d13;
+  --rx-heat-glow: rgba(232, 93, 19, 0.18);
+  --rx-heat-ink: #fff8f2;
+
+  --rx-cool: #1d8e9a;
+  --rx-cool-glow: rgba(29, 142, 154, 0.16);
+
+  --rx-done: #3f7f4c;
+  --rx-done-glow: rgba(63, 127, 76, 0.18);
+
+  --rx-warn: #b8860b;
+  --rx-danger: #c93a3e;
+  --rx-danger-glow: rgba(201, 58, 62, 0.16);
+
+  --rx-locked: #d8d3c6;
+  --rx-locked-text: #a19c8f;
+
+  --rx-shadow: 0 10px 26px rgba(30, 25, 15, 0.10);
+}
+
+/* ------------------------------------------------------------------ */
+
+.rx-app {
+  --font-display: 'Big Shoulders Display', sans-serif;
+  --font-body: 'IBM Plex Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  min-height: 100vh;
+  background: var(--rx-bg-glow), var(--rx-bg);
+  background-attachment: fixed;
+  color: var(--rx-text);
+  font-family: var(--font-body);
+  position: relative;
+}
+
+/* faint technical grid, like graph paper on a control-room wall */
+.rx-app::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--rx-border-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--rx-border-soft) 1px, transparent 1px);
+  background-size: 42px 42px;
+  opacity: 0.35;
+  z-index: 0;
+}
+
+.rx-app > * {
+  position: relative;
+  z-index: 1;
+}
+
+.rx-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.01em;
+}
+
+.rx-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.rx-panel {
+  background: var(--rx-panel);
+  border: 1px solid var(--rx-border);
+  border-radius: 10px;
+}
+
+.rx-panel-raised {
+  background: var(--rx-panel-raised);
+  border: 1px solid var(--rx-border);
+  border-radius: 10px;
+  box-shadow: var(--rx-shadow);
+}
+
+.rx-btn {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid var(--rx-border);
+  background: var(--rx-panel-raised);
+  color: var(--rx-text);
+  cursor: pointer;
+  transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease;
+  min-height: 48px;
+}
+
+.rx-btn:hover:not(:disabled) { filter: brightness(1.08); }
+.rx-btn:active:not(:disabled) { transform: scale(0.98); }
+.rx-btn:disabled { opacity: 0.42; cursor: not-allowed; }
+
+.rx-btn--primary {
+  background: var(--rx-heat);
+  border-color: var(--rx-heat);
+  color: var(--rx-heat-ink);
+  box-shadow: 0 0 0 0 var(--rx-heat-glow);
+}
+.rx-btn--primary:hover:not(:disabled) {
+  box-shadow: 0 0 24px var(--rx-heat-glow);
+}
+
+.rx-btn--cool {
+  background: var(--rx-cool);
+  border-color: var(--rx-cool);
+  color: var(--rx-heat-ink);
+}
+.rx-btn--cool:hover:not(:disabled) { box-shadow: 0 0 24px var(--rx-cool-glow); }
+
+.rx-btn--done {
+  background: var(--rx-done);
+  border-color: var(--rx-done);
+  color: var(--rx-heat-ink);
+}
+.rx-btn--done:hover:not(:disabled) { box-shadow: 0 0 24px var(--rx-done-glow); }
+
+.rx-field {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid var(--rx-border);
+  background: var(--rx-bg);
+  color: var(--rx-text);
+  min-height: 48px;
+  width: 100%;
+}
+.rx-field:focus-visible {
+  outline: 2px solid var(--rx-heat);
+  outline-offset: 1px;
+}
+.rx-field:disabled { opacity: 0.5; }
+
+/* ---- staggered power-on entrance, used once per chamber load ---- */
+@keyframes rx-power-on {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.rx-stagger {
+  animation: rx-power-on 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+@keyframes rx-pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 var(--rx-heat-glow); }
+  50% { box-shadow: 0 0 18px 2px var(--rx-heat-glow); }
+}
+.rx-pulse { animation: rx-pulse-glow 1.8s ease-in-out infinite; }
+
+@keyframes rx-scan-confirm {
+  0% { transform: scale(0.9); opacity: 0; }
+  60% { transform: scale(1.03); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.rx-scan-confirm-anim { animation: rx-scan-confirm 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rx-stagger, .rx-pulse, .rx-scan-confirm-anim { animation: none !important; }
+}
