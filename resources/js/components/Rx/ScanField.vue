@@ -6,8 +6,6 @@ const props = defineProps({
   label: { type: String, required: true },
   requirePic: { type: Boolean, default: false },
   disabled: { type: Boolean, default: false },
-  // Lets a parent show an already-resolved name after a page reload
-  // (e.g. loadedBy.name once the chamber has moved past this step).
   lockedName: { type: String, default: '' },
 })
 

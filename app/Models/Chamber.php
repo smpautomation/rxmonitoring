@@ -82,10 +82,6 @@ class Chamber extends Model
         return 'Chamber '.str_pad((string) $this->chamber_number, 2, '0', STR_PAD_LEFT);
     }
 
-    /**
-     * Which of the six stations is the active one right now. Drives both
-     * the gauge track UI and server-side guards on each transition endpoint.
-     */
     public function getCurrentStepAttribute(): string
     {
         if (! $this->oven_id) return 'oven_setup';
@@ -98,12 +94,6 @@ class Chamber extends Model
         return 'closed';
     }
 
-    /**
-     * Recompute total_weight_kg / weight_status from the layers table.
-     * Called after any layer is saved/cleared, or the oven assignment
-     * changes. Replaces the old app's repeated "sum every layer, then
-     * UPDATE every layer's copy of the total" dance.
-     */
     public function recalculateWeight(): void
     {
         $total = $this->layers()->sum('weight_per_tray_kg');

@@ -9,18 +9,6 @@ use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-/**
- * Successor to the legacy frmExport.vb, which let an operator pick any
- * rx_sheet column from a dropdown, type a keyword, and get a LIKE '%...%'
- * search - then exported by literally copying the results grid to the
- * clipboard and pasting it into a new Excel workbook via COM automation.
- *
- * That "pick a column" search was a workaround for not having real filters,
- * not a deliberate design choice, so it's replaced here with structured
- * filters (area, status, date range, keyword-across-the-fields-that-
- * actually-matter) and a real streamed CSV download instead of a
- * clipboard/COM trick that only ever worked on the desktop app itself.
- */
 class ExportController extends Controller
 {
     private const MAX_ON_SCREEN = 500;
@@ -71,12 +59,6 @@ class ExportController extends Controller
         }, $filename, ['Content-Type' => 'text/csv']);
     }
 
-    /**
-     * One row per lot-in-a-layer, flattened back out to roughly the shape
-     * the legacy rx_sheet export had - familiar for anyone used to that
-     * spreadsheet, but built from the normalized chambers/chamber_layers
-     * tables instead of one bloated table.
-     */
     private function baseQuery(Request $request)
     {
         $query = DB::table('chamber_layers as l')
