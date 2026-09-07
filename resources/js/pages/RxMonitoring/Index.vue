@@ -1,9 +1,9 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Head, router, useForm } from '@inertiajs/vue3'
-import ScanField from '@/components/Rx/ScanField.vue'
-import StationTrack from '@/components/Rx/StationTrack.vue'
-import LayerGrid from '@/components/Rx/LayerGrid.vue'
+import ScanField from '@/Components/Rx/ScanField.vue'
+import StationTrack from '@/Components/Rx/StationTrack.vue'
+import LayerGrid from '@/Components/Rx/LayerGrid.vue'
 import '../../../css/rx-monitoring.css'
 
 const props = defineProps({
@@ -16,13 +16,16 @@ const props = defineProps({
   selectedChamberNumber: { type: Number, default: null },
 })
 
+/* ---------------------------------------------------------------- theme */
 const theme = ref(localStorage.getItem('rx-theme') || 'dark')
 watch(theme, (val) => localStorage.setItem('rx-theme', val))
 function toggleTheme() { theme.value = theme.value === 'dark' ? 'light' : 'dark' }
 
+/* ----------------------------------------------------------------- clock */
 const now = ref(new Date())
 let clockTimer = null
 
+/* -------------------------------------------------------- auto-refresh */
 const refreshing = ref(false)
 const lastRefreshed = ref(new Date())
 let pollTimer = null
@@ -51,13 +54,16 @@ const clockLabel = computed(() =>
   now.value.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 )
 
+/* ------------------------------------------------------ area selection */
 function selectArea(code) {
   router.get('/', code ? { area: code } : {}, { preserveState: false })
 }
 
+/* -------------------------------------------------- PIC gate (client) */
 const locationPic = ref(null)
 watch(() => props.area?.code, () => { locationPic.value = null })
 
+/* ---------------------------------------------------- chamber selection */
 const chamberNumbers = computed(() =>
   props.area ? Array.from({ length: props.area.chamber_count }, (_, i) => i + 1) : []
 )
@@ -97,16 +103,19 @@ function viewChamber(c) {
   router.get('/', { area: props.area.code, chamber: c.chamber_number })
 }
 
+/* ---------------------------------------------------------- weight bar */
 const weightPct = computed(() => {
   if (!props.chamber?.oven_capacity_kg) return 0
   return Math.min(100, (Number(props.chamber.total_weight_kg) / Number(props.chamber.oven_capacity_kg)) * 100)
 })
 
+/* ------------------------------------------------------------- step: oven */
 const ovenForm = useForm({ oven_id: null })
 function submitOven() {
   ovenForm.patch(`/rx-monitoring/chambers/${props.chamber.id}/oven`, { preserveScroll: true })
 }
 
+/* ------------------------------------------------------- step: before rx */
 const loadedByScan = ref(null)
 const startForm = useForm({ start_temperature_c: '', scanned_code: '' })
 function submitStart() {
@@ -121,6 +130,7 @@ function submitStart() {
   )
 }
 
+/* -------------------------------------------------------- step: peak */
 const peakScan = ref(null)
 const peakForm = useForm({ scanned_code: '' })
 function submitPeak() {
@@ -135,6 +145,7 @@ function submitPeak() {
   )
 }
 
+/* --------------------------------------------------------- step: stop */
 const unloadedByScan = ref(null)
 const stopForm = useForm({ stop_temperature_c: '', scanned_code: '' })
 function submitStop() {
@@ -149,6 +160,7 @@ function submitStop() {
   )
 }
 
+/* ------------------------------------------------------ step: cooling */
 function submitCoolingStart() {
   router.patch(`/rx-monitoring/chambers/${props.chamber.id}/cooling-start`, {}, { preserveScroll: true })
 }
@@ -156,6 +168,7 @@ function submitCoolingEnd() {
   router.patch(`/rx-monitoring/chambers/${props.chamber.id}/cooling-end`, {}, { preserveScroll: true })
 }
 
+/* -------------------------------------------------- step: confirmation */
 const closeScan = ref(null)
 const closeForm = useForm({ scanned_code: '' })
 function submitClose() {
@@ -167,6 +180,7 @@ function submitClose() {
   )
 }
 
+/* ---------------------------------------------------- generic confirm */
 const confirmDialog = ref(null)
 function askConfirm(title, message, action, confirmLabel = 'Confirm') {
   confirmDialog.value = { title, message, action, confirmLabel }
@@ -188,6 +202,7 @@ function fmtTime(v) {
   <Head title="RX Monitoring" />
 
   <div class="rx-app" :data-rx-theme="theme">
+    <!-- ============================================================ header -->
     <header class="rx-header">
       <div class="rx-header__brand">
         <span class="rx-display rx-header__wordmark">RX MONITORING</span>
@@ -209,6 +224,7 @@ function fmtTime(v) {
     </header>
 
     <div class="rx-layout">
+      <!-- ======================================================== sidebar -->
       <aside class="rx-sidebar">
         <section class="rx-panel rx-stagger sidebar-section">
           <h2 class="sidebar-section__title">Location parameter</h2>
@@ -269,6 +285,7 @@ function fmtTime(v) {
         </section>
       </aside>
 
+      <!-- ========================================================== main -->
       <main class="rx-main">
         <div v-if="!area" class="empty-state rx-panel">
           <p class="rx-display empty-state__title">Select an area to begin</p>
@@ -320,6 +337,7 @@ function fmtTime(v) {
             <StationTrack :current-step="chamber.current_step" />
           </section>
 
+          <!-- active step panel -->
           <section class="rx-panel rx-stagger step-panel">
             <template v-if="chamber.current_step === 'oven_setup'">
               <h3 class="step-panel__title">1 · RX oven setup</h3>
@@ -422,6 +440,7 @@ function fmtTime(v) {
             </template>
           </section>
 
+          <!-- layers -->
           <section class="rx-panel rx-stagger layers-section" style="animation-delay:90ms">
             <h3 class="step-panel__title">Layers ({{ chamber.layers.filter(l => l.is_filled).length }}/{{ chamber.layers.length }} loaded)</h3>
             <LayerGrid
@@ -435,6 +454,7 @@ function fmtTime(v) {
       </main>
     </div>
 
+    <!-- ===================================================== confirm dialog -->
     <div v-if="confirmDialog" class="confirm-overlay" @click.self="cancelConfirm">
       <div class="confirm-dialog rx-panel-raised rx-scan-confirm-anim">
         <h3 class="rx-display">{{ confirmDialog.title }}</h3>

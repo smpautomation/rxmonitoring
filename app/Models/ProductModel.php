@@ -12,10 +12,11 @@ class ProductModel extends Model
     // here, but explicit beats implicit for a table this central.
     protected $table = 'product_models';
 
-    protected $fillable = ['area_id', 'model_name', 'unit_weight_grams', 'checked_by_id'];
+    protected $fillable = ['area_id', 'model_name', 'unit_weight_grams', 'checked_by_id', 'is_active'];
 
     protected $casts = [
         'unit_weight_grams' => 'decimal:3',
+        'is_active' => 'boolean',
     ];
 
     public function area(): BelongsTo

@@ -1,3 +1,12 @@
+/* RX Monitoring — design system
+   ------------------------------------------------------------------
+   Subject: a shop-floor kiosk beside an industrial curing oven, used by
+   operators in gloves who scan badge QR codes. This is a control panel,
+   not a SaaS dashboard — the palette, type, and motion all come from that.
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
 [data-rx-theme='dark'] {
   --rx-bg: #1a1d1f;
   --rx-bg-glow: radial-gradient(ellipse 900px 500px at 15% -10%, rgba(255, 122, 26, 0.10), transparent),
@@ -75,6 +84,30 @@
   color: var(--rx-text);
   font-family: var(--font-body);
   position: relative;
+  isolation: isolate; /* keeps the -1 z-index layer below contained to this element, not the whole page */
+}
+
+/* the actual equipment this app monitors, cut out and tinted to the
+   palette - sits beneath the grid, low-opacity so it reads as atmosphere
+   rather than a photo. Swap the URL for your own oven's product shot if
+   you have a better one; the treatment (duotone + faded edges) is what
+   makes it feel designed-in rather than pasted-on. */
+.rx-app::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: url('/images/rx-oven-art.png');
+  background-repeat: no-repeat;
+  background-position: right -60px bottom -20px;
+  background-size: min(56vw, 760px) auto;
+  opacity: 0.16;
+  z-index: -1;
+}
+
+@media (max-width: 700px) {
+  /* keeps small screens uncluttered and skips the extra image weight */
+  .rx-app::after { display: none; }
 }
 
 /* faint technical grid, like graph paper on a control-room wall */

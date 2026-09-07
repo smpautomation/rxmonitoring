@@ -1,14 +1,14 @@
 <?php
 
+use App\Http\Controllers\AreaController;
 use App\Http\Controllers\ExportController;
+use App\Http\Controllers\ManageController;
+use App\Http\Controllers\OvenController;
+use App\Http\Controllers\ProductModelController;
 use App\Http\Controllers\RxMonitoringController;
 use App\Http\Controllers\ScanController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-
-// Route::get('/', function () {
-//     return Inertia::render('RxMonitoring/Index');
-// })->name('rx-monitoring.');
 
 Route::get('/', [RxMonitoringController::class, 'index'])->name('rx-monitoring.index');
 Route::prefix('rx-monitoring')->name('rx-monitoring.')->group(function () {
@@ -33,4 +33,21 @@ Route::prefix('rx-monitoring')->name('rx-monitoring.')->group(function () {
     // Export / reporting screen (successor to the legacy frmExport.vb)
     Route::get('/export', [ExportController::class, 'index'])->name('export.index');
     Route::get('/export/download', [ExportController::class, 'download'])->name('export.download');
+
+    // Back-office CRUD for the oven/model lookup tables. Not linked from
+    // the main operator page - put this behind admin/supervisor auth
+    // middleware, e.g. ->middleware('can:manage-rx-monitoring').
+    Route::get('/manage', [ManageController::class, 'index'])->name('manage.index');
+
+    Route::post('/areas', [AreaController::class, 'store'])->name('areas.store');
+    Route::patch('/areas/{area}', [AreaController::class, 'update'])->name('areas.update');
+    Route::delete('/areas/{area}', [AreaController::class, 'destroy'])->name('areas.destroy');
+
+    Route::post('/ovens', [OvenController::class, 'store'])->name('ovens.store');
+    Route::patch('/ovens/{oven}', [OvenController::class, 'update'])->name('ovens.update');
+    Route::delete('/ovens/{oven}', [OvenController::class, 'destroy'])->name('ovens.destroy');
+
+    Route::post('/product-models', [ProductModelController::class, 'store'])->name('product-models.store');
+    Route::patch('/product-models/{productModel}', [ProductModelController::class, 'update'])->name('product-models.update');
+    Route::delete('/product-models/{productModel}', [ProductModelController::class, 'destroy'])->name('product-models.destroy');
 });

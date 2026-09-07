@@ -66,6 +66,9 @@ async function lookupWorkOrder() {
   woResolving.value = true
   woError.value = ''
   try {
+    // woCode may be a plain work order id, or a QR payload bundling other
+    // fields ("WO12345;MODEL-100;LOT-9;..."); the server filters that down
+    // and returns just the work order id it actually matched on.
     const { data } = await axios.post('/rx-monitoring/scan/work-order', {
       work_order_id: woCode.value.trim(),
     })

@@ -6,6 +6,8 @@ const props = defineProps({
   label: { type: String, required: true },
   requirePic: { type: Boolean, default: false },
   disabled: { type: Boolean, default: false },
+  // Lets a parent show an already-resolved name after a page reload
+  // (e.g. loadedBy.name once the chamber has moved past this step).
   lockedName: { type: String, default: '' },
 })
 
@@ -78,7 +80,7 @@ defineExpose({ reset, focus: () => inputEl.value?.focus() })
       <input
         ref="inputEl"
         v-model="code"
-        type="password"
+        type="text"
         class="scan-field__input rx-mono"
         :placeholder="requirePic ? 'Scan PIC badge…' : 'Scan operator badge…'"
         :disabled="disabled || resolving"

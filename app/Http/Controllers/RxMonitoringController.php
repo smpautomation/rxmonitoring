@@ -16,6 +16,11 @@ use Inertia\Response;
 
 class RxMonitoringController extends Controller
 {
+    /**
+     * The whole app is this one page. Area/chamber selection lives in the
+     * query string (?area=NCP2&chamber=5) so refresh, back/forward, and
+     * auto-refresh polling all behave predictably.
+     */
     public function index(Request $request): Response
     {
         $areas = Area::where('is_active', true)->orderBy('code')->get(['id', 'code', 'name', 'chamber_count', 'layer_count']);
@@ -32,7 +37,7 @@ class RxMonitoringController extends Controller
 
         if ($area) {
             $ovens = Oven::where('area_id', $area->id)->where('is_active', true)->orderBy('oven_no')->get();
-            $productModels = ProductModel::where('area_id', $area->id)->orderBy('model_name')->get();
+            $productModels = ProductModel::where('area_id', $area->id)->where('is_active', true)->orderBy('model_name')->get();
 
             $openChambers = Chamber::where('area_id', $area->id)
                 ->where('status', 'open')
@@ -63,6 +68,12 @@ class RxMonitoringController extends Controller
         ]);
     }
 
+    /**
+     * Step 0: Location Parameter -> New chamber. Requires a PIC badge scan
+     * (not just a typed "Authorized by" name) and reserves every layer slot
+     * up front, same as the legacy app did, but as real rows joined by a
+     * foreign key instead of duplicated Chamber_No text.
+     */
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -117,6 +128,7 @@ class RxMonitoringController extends Controller
         ])->with('success', 'Chamber '.$chamber->chamber_number.' opened by '.$pic->name.'.');
     }
 
+    /** Step 1: RX Oven Setup. */
     public function setOven(Request $request, Chamber $chamber)
     {
         $data = $request->validate(['oven_id' => ['required', 'exists:ovens,id']]);
@@ -132,6 +144,7 @@ class RxMonitoringController extends Controller
         return back()->with('success', 'RX Oven set to '.$oven->oven_no.'.');
     }
 
+    /** Encode or update one lot in one layer slot. */
     public function storeLayer(Request $request, Chamber $chamber, ChamberLayer $layer)
     {
         abort_unless($layer->chamber_id === $chamber->id, 404);
@@ -191,6 +204,7 @@ class RxMonitoringController extends Controller
         return back()->with('success', 'Layer '.$layer->layer_no.' cleared.');
     }
 
+    /** Step 2: Before RX (after chamber loading). */
     public function start(Request $request, Chamber $chamber)
     {
         if (! $chamber->oven_id) {
@@ -219,6 +233,7 @@ class RxMonitoringController extends Controller
         return back()->with('success', 'Start temperature logged by '.$operator->name.'.');
     }
 
+    /** Step 3: Peak temperature reached. */
     public function peak(Request $request, Chamber $chamber)
     {
         if (! $chamber->start_time) {
@@ -236,6 +251,7 @@ class RxMonitoringController extends Controller
         return back()->with('success', 'Peak temperature checked by '.$person->name.'.');
     }
 
+    /** Step 4: After RX (before chamber unloading). */
     public function stop(Request $request, Chamber $chamber)
     {
         if (! $chamber->peak_temp_time) {
@@ -258,6 +274,7 @@ class RxMonitoringController extends Controller
         return back()->with('success', 'Stop temperature logged by '.$operator->name.'.');
     }
 
+    /** Step 5a: Chamber cooling process - start. */
     public function coolingStart(Chamber $chamber)
     {
         if (! $chamber->stop_time) {
@@ -269,6 +286,7 @@ class RxMonitoringController extends Controller
         return back()->with('success', 'Cooling started.');
     }
 
+    /** Step 5b: Chamber cooling process - end. */
     public function coolingEnd(Chamber $chamber)
     {
         if (! $chamber->cooling_start_time) {
@@ -280,6 +298,10 @@ class RxMonitoringController extends Controller
         return back()->with('success', 'Cooling finished.');
     }
 
+    /**
+     * Step 6: Confirmation. Replaces the old month-digit password with a PIC
+     * badge scan - only a PIC badge (prefix 01) can close a chamber out.
+     */
     public function close(Request $request, Chamber $chamber)
     {
         if (! $chamber->cooling_end_time) {
