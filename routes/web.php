@@ -7,6 +7,7 @@ use App\Http\Controllers\OvenController;
 use App\Http\Controllers\ProductModelController;
 use App\Http\Controllers\RxMonitoringController;
 use App\Http\Controllers\ScanController;
+use App\Http\Middleware\EnsureManageAccess;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -38,16 +39,22 @@ Route::prefix('rx-monitoring')->name('rx-monitoring.')->group(function () {
     // the main operator page - put this behind admin/supervisor auth
     // middleware, e.g. ->middleware('can:manage-rx-monitoring').
     Route::get('/manage', [ManageController::class, 'index'])->name('manage.index');
+    Route::post('/manage/unlock', [ManageController::class, 'unlock'])
+        ->middleware('throttle:10,1')
+        ->name('manage.unlock');
+    Route::post('/manage/lock', [ManageController::class, 'lock'])->name('manage.lock');
 
-    Route::post('/areas', [AreaController::class, 'store'])->name('areas.store');
-    Route::patch('/areas/{area}', [AreaController::class, 'update'])->name('areas.update');
-    Route::delete('/areas/{area}', [AreaController::class, 'destroy'])->name('areas.destroy');
+    Route::middleware(EnsureManageAccess::class)->group(function () {
+        Route::post('/areas', [AreaController::class, 'store'])->name('areas.store');
+        Route::patch('/areas/{area}', [AreaController::class, 'update'])->name('areas.update');
+        Route::delete('/areas/{area}', [AreaController::class, 'destroy'])->name('areas.destroy');
 
-    Route::post('/ovens', [OvenController::class, 'store'])->name('ovens.store');
-    Route::patch('/ovens/{oven}', [OvenController::class, 'update'])->name('ovens.update');
-    Route::delete('/ovens/{oven}', [OvenController::class, 'destroy'])->name('ovens.destroy');
+        Route::post('/ovens', [OvenController::class, 'store'])->name('ovens.store');
+        Route::patch('/ovens/{oven}', [OvenController::class, 'update'])->name('ovens.update');
+        Route::delete('/ovens/{oven}', [OvenController::class, 'destroy'])->name('ovens.destroy');
 
-    Route::post('/product-models', [ProductModelController::class, 'store'])->name('product-models.store');
-    Route::patch('/product-models/{productModel}', [ProductModelController::class, 'update'])->name('product-models.update');
-    Route::delete('/product-models/{productModel}', [ProductModelController::class, 'destroy'])->name('product-models.destroy');
+        Route::post('/product-models', [ProductModelController::class, 'store'])->name('product-models.store');
+        Route::patch('/product-models/{productModel}', [ProductModelController::class, 'update'])->name('product-models.update');
+        Route::delete('/product-models/{productModel}', [ProductModelController::class, 'destroy'])->name('product-models.destroy');
+    });
 });

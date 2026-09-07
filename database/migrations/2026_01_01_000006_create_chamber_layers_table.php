@@ -29,7 +29,7 @@ return new class extends Migration
             // The scanned work-order reference used to auto-fill model/lot/qty
             // from the separate inventory system.
             $table->string('work_order_id')->nullable();
-            $table->foreignId('authorized_pic_id')->nullable()->constrained('personnels')->nullOnDelete();
+            $table->foreignId('authorized_pic_id')->nullable()->constrained('personnel')->nullOnDelete();
 
             $table->timestamps();
 

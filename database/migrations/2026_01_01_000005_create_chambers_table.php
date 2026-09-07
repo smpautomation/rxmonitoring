@@ -30,7 +30,7 @@ return new class extends Migration
             $table->enum('status', ['open', 'closed'])->default('open');
 
             // Location Parameter step
-            $table->foreignId('authorized_by_id')->nullable()->constrained('personnels')->nullOnDelete();
+            $table->foreignId('authorized_by_id')->nullable()->constrained('personnel')->nullOnDelete();
 
             // RX Oven Setup step
             $table->foreignId('oven_id')->nullable()->constrained()->nullOnDelete();
@@ -43,16 +43,16 @@ return new class extends Migration
 
             // Before RX (after loading)
             $table->decimal('start_temperature_c', 6, 2)->nullable();
-            $table->foreignId('loaded_by_id')->nullable()->constrained('personnels')->nullOnDelete();
+            $table->foreignId('loaded_by_id')->nullable()->constrained('personnel')->nullOnDelete();
             $table->timestamp('start_time')->nullable();
 
             // Peak temperature reached
-            $table->foreignId('peak_checked_by_id')->nullable()->constrained('personnels')->nullOnDelete();
+            $table->foreignId('peak_checked_by_id')->nullable()->constrained('personnel')->nullOnDelete();
             $table->timestamp('peak_temp_time')->nullable();
 
             // After RX (before unloading)
             $table->decimal('stop_temperature_c', 6, 2)->nullable();
-            $table->foreignId('unloaded_by_id')->nullable()->constrained('personnels')->nullOnDelete();
+            $table->foreignId('unloaded_by_id')->nullable()->constrained('personnel')->nullOnDelete();
             $table->timestamp('stop_time')->nullable();
 
             // Cooling
@@ -61,7 +61,7 @@ return new class extends Migration
 
             // Confirmation / close - now a PIC badge scan instead of a
             // month-digit password
-            $table->foreignId('closed_by_id')->nullable()->constrained('personnels')->nullOnDelete();
+            $table->foreignId('closed_by_id')->nullable()->constrained('personnel')->nullOnDelete();
             $table->timestamp('closed_time')->nullable();
 
             $table->timestamps();

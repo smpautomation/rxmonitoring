@@ -29,7 +29,7 @@ class PersonnelScanner
     {
         $code = trim($rawCode);
 
-        if (! preg_match('/^(\d{2});([A-Za-z0-9\-]+):(.+)$/', $code, $m)) {
+        if (! preg_match('/^(\d{2});([A-Za-z0-9\-]+);(.+)$/', $code, $m)) {
             throw new InvalidArgumentException(
                 'Unrecognized badge format. Please scan the QR code on the ID again.'
             );

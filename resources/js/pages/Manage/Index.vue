@@ -5,6 +5,8 @@ import ScanField from '@/Components/Rx/ScanField.vue'
 import '../../../css/rx-monitoring.css'
 
 const props = defineProps({
+  locked: { type: Boolean, default: true },
+  unlockedBy: { type: String, default: null },
   areas: { type: Array, required: true },
   ovens: { type: Array, required: true },
   productModels: { type: Array, required: true },
@@ -14,6 +16,41 @@ const theme = ref(localStorage.getItem('rx-theme') || 'dark')
 const activeTab = ref('areas') // 'areas' | 'ovens' | 'models'
 const areaFilter = ref('')
 const deleteError = ref('')
+
+/* --------------------------------------------------------------- access gate */
+const unlocking = ref(false)
+const unlockError = ref('')
+
+function handleUnlockScan(scan) {
+  unlocking.value = true
+  unlockError.value = ''
+  router.post('/rx-monitoring/manage/unlock', { scanned_code: scan.rawCode }, {
+    preserveScroll: true,
+    onError: (errors) => { unlockError.value = errors.scanned_code ?? errors.unlock ?? 'Could not unlock Manage.' },
+    onFinish: () => { unlocking.value = false },
+  })
+}
+
+const showPasswordFallback = ref(false)
+const passwordInput = ref('')
+const passwordUnlocking = ref(false)
+const passwordError = ref('')
+
+function submitPasswordUnlock() {
+  if (!passwordInput.value) return
+  passwordUnlocking.value = true
+  passwordError.value = ''
+  router.post('/rx-monitoring/manage/unlock', { password: passwordInput.value }, {
+    preserveScroll: true,
+    onError: (errors) => { passwordError.value = errors.password ?? errors.unlock ?? 'Incorrect password.' },
+    onSuccess: () => { passwordInput.value = '' },
+    onFinish: () => { passwordUnlocking.value = false },
+  })
+}
+
+function lockNow() {
+  router.post('/rx-monitoring/manage/lock', {}, { preserveScroll: true })
+}
 
 const filteredOvens = computed(() =>
   props.ovens.filter((o) => !areaFilter.value || o.area?.code === areaFilter.value)
@@ -204,10 +241,51 @@ function deleteModel(model) {
         <a href="/" class="rx-display rx-header__wordmark rx-header__wordmark--link">RX MONITORING</a>
         <span class="rx-header__area rx-mono">MANAGE</span>
       </div>
-      <a href="/" class="rx-btn">← Back to monitoring</a>
+      <div class="rx-header__right">
+        <span v-if="!locked && unlockedBy" class="rx-header__unlocked-by rx-mono">
+          Unlocked {{ unlockedBy === 'password' ? 'via password' : 'by ' + unlockedBy }}
+        </span>
+        <button v-if="!locked" type="button" class="rx-btn" @click="lockNow">🔒 Lock</button>
+        <a href="/" class="rx-btn">← Back to monitoring</a>
+      </div>
     </header>
 
-    <main class="manage-main">
+    <!-- ============================================================= locked gate -->
+    <main v-if="locked" class="manage-main manage-main--gate">
+      <section class="rx-panel rx-stagger gate-panel">
+        <p class="rx-display gate-panel__title">Manage is locked</p>
+        <p class="gate-panel__body">Scan a PIC badge to edit areas, ovens, and models.</p>
+        <ScanField label="Scan PIC badge to unlock" require-pic :disabled="unlocking" @scanned="handleUnlockScan" />
+        <p v-if="unlockError" class="field-error">{{ unlockError }}</p>
+
+        <button type="button" class="gate-panel__toggle" @click="showPasswordFallback = !showPasswordFallback">
+          {{ showPasswordFallback ? 'Use a PIC badge instead' : "Don't have a badge? Use a password instead" }}
+        </button>
+
+        <div v-if="showPasswordFallback" class="gate-panel__password">
+          <input
+            v-model="passwordInput"
+            type="password"
+            class="rx-field"
+            placeholder="Manage password"
+            autocomplete="off"
+            :disabled="passwordUnlocking"
+            @keydown.enter.prevent="submitPasswordUnlock"
+          />
+          <button
+            type="button"
+            class="rx-btn rx-btn--primary"
+            :disabled="passwordUnlocking || !passwordInput"
+            @click="submitPasswordUnlock"
+          >
+            {{ passwordUnlocking ? 'Checking…' : 'Unlock' }}
+          </button>
+        </div>
+        <p v-if="passwordError" class="field-error">{{ passwordError }}</p>
+      </section>
+    </main>
+
+    <main v-else class="manage-main">
       <div class="manage-toolbar rx-stagger">
         <div class="tab-switch">
           <button type="button" class="tab-switch__btn" :class="{ 'tab-switch__btn--active': activeTab === 'areas' }" @click="activeTab = 'areas'">
@@ -507,8 +585,25 @@ function deleteModel(model) {
   border-radius: 5px;
   padding: 0.1rem 0.45rem;
 }
+.rx-header__right { display: flex; align-items: center; gap: 0.7rem; }
+.rx-header__unlocked-by { font-size: 0.78rem; color: var(--rx-text-faint); }
 
 .manage-main { max-width: 1200px; margin: 0 auto; padding: 1.25rem 1.5rem 3rem; display: flex; flex-direction: column; gap: 1rem; }
+.manage-main--gate { max-width: 420px; padding-top: 4rem; }
+.gate-panel { padding: 2rem 1.75rem; text-align: center; display: flex; flex-direction: column; gap: 1rem; align-items: stretch; }
+.gate-panel__title { font-size: 1.6rem; margin: 0; }
+.gate-panel__body { color: var(--rx-text-dim); font-size: 0.9rem; margin: -0.5rem 0 0; }
+.gate-panel__toggle {
+  border: none;
+  background: none;
+  color: var(--rx-text-dim);
+  font-size: 0.8rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0.2rem 0;
+}
+.gate-panel__password { display: flex; gap: 0.5rem; }
+.gate-panel__password .rx-field { flex: 1; }
 
 .manage-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
 .tab-switch { display: flex; gap: 0.4rem; background: var(--rx-panel); border: 1px solid var(--rx-border); border-radius: 8px; padding: 0.25rem; }

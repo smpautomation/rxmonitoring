@@ -2,36 +2,82 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\EnsureManageAccess;
 use App\Models\Area;
 use App\Models\Oven;
 use App\Models\ProductModel;
+use App\Services\PersonnelScanner;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
-/**
- * Back-office CRUD for the three lookup tables (areas, ovens,
- * product_models) that feed the main monitoring page's dropdowns. The
- * legacy app had no admin screen for any of them - areas were a hardcoded
- * password list in the VB source, and oven_list / model_list were
- * maintained by hand directly in the database. This is meant to sit
- * behind whatever admin/supervisor auth your app uses, not be reachable
- * by shop-floor operators - it's not linked from the main page's header
- * for that reason.
- *
- * All three lists are small enough (dozens of rows, not thousands) to
- * load in full and filter client-side by area rather than round-tripping
- * to the server for every filter change.
- */
 class ManageController extends Controller
 {
-    public function index(): InertiaResponse
+    public function index(Request $request): InertiaResponse
     {
+        $until = $request->session()->get(EnsureManageAccess::SESSION_KEY);
+        $unlocked = $until && now()->lt($until);
+
+        if (! $unlocked) {
+            return Inertia::render('Manage/Index', [
+                'locked' => true,
+                'unlockedBy' => null,
+                'areas' => [],
+                'ovens' => [],
+                'productModels' => [],
+            ]);
+        }
+
         return Inertia::render('Manage/Index', [
+            'locked' => false,
+            'unlockedBy' => $request->session()->get(EnsureManageAccess::UNLOCKED_BY_KEY),
             'areas' => Area::orderBy('code')->get(),
             'ovens' => Oven::with('area:id,code')
                 ->orderBy('area_id')->orderBy('oven_no')->get(),
             'productModels' => ProductModel::with(['area:id,code', 'checkedBy:id,name'])
                 ->orderBy('area_id')->orderBy('model_name')->get(),
         ]);
+    }
+
+    public function unlock(Request $request)
+    {
+        $data = $request->validate([
+            'scanned_code' => ['nullable', 'string'],
+            'password' => ['nullable', 'string'],
+        ]);
+
+        if (blank($data['scanned_code'] ?? null) && blank($data['password'] ?? null)) {
+            throw ValidationException::withMessages([
+                'unlock' => 'Scan a PIC badge or enter the password.',
+            ]);
+        }
+
+        if (filled($data['scanned_code'] ?? null)) {
+            $pic = PersonnelScanner::requirePic($data['scanned_code']);
+            $unlockedBy = $pic->name;
+        } else {
+            $configured = config('rx-monitoring.manage_password');
+            $valid = is_string($configured) && $configured !== ''
+                && hash_equals($configured, (string) $data['password']);
+
+            if (! $valid) {
+                throw ValidationException::withMessages(['password' => 'Incorrect password.']);
+            }
+
+            $unlockedBy = 'password';
+        }
+
+        $request->session()->put(EnsureManageAccess::SESSION_KEY, now()->addMinutes(EnsureManageAccess::MINUTES));
+        $request->session()->put(EnsureManageAccess::UNLOCKED_BY_KEY, $unlockedBy);
+
+        return back()->with('success', "Manage unlocked ({$unlockedBy}).");
+    }
+
+    public function lock(Request $request)
+    {
+        $request->session()->forget([EnsureManageAccess::SESSION_KEY, EnsureManageAccess::UNLOCKED_BY_KEY]);
+
+        return redirect()->route('rx-monitoring.manage.index');
     }
 }

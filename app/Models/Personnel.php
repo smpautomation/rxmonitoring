@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Personnel extends Model
 {
+    protected $table = "personnel";
     protected $fillable = ['employee_id', 'name', 'role', 'is_active', 'last_scanned_at'];
 
     protected $casts = [

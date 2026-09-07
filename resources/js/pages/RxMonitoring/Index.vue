@@ -1,9 +1,9 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Head, router, useForm } from '@inertiajs/vue3'
-import ScanField from '@/Components/Rx/ScanField.vue'
-import StationTrack from '@/Components/Rx/StationTrack.vue'
-import LayerGrid from '@/Components/Rx/LayerGrid.vue'
+import ScanField from '@/components/Rx/ScanField.vue'
+import StationTrack from '@/components/Rx/StationTrack.vue'
+import LayerGrid from '@/components/Rx/LayerGrid.vue'
 import '../../../css/rx-monitoring.css'
 
 const props = defineProps({
@@ -211,6 +211,7 @@ function fmtTime(v) {
 
       <div class="rx-header__right">
         <a href="/rx-monitoring/export" class="rx-btn rx-header__export-link">Export</a>
+        <a href="/rx-monitoring/manage" class="rx-btn rx-header__export-link">Manage</a>
         <button type="button" class="live-pill" @click="refreshNow" :title="'Last updated ' + lastRefreshed.toLocaleTimeString()">
           <span class="live-pill__dot" :class="{ 'live-pill__dot--spin': refreshing }" />
           Live

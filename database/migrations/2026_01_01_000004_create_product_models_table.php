@@ -18,7 +18,8 @@ return new class extends Migration
             $table->foreignId('area_id')->constrained()->cascadeOnDelete();
             $table->string('model_name');
             $table->decimal('unit_weight_grams', 10, 3);
-            $table->foreignId('checked_by_id')->nullable()->constrained('personnels')->nullOnDelete();
+            $table->foreignId('checked_by_id')->nullable()->constrained('personnel')->nullOnDelete();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
 
             $table->unique(['area_id', 'model_name']);
