@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { Head, router, useForm } from '@inertiajs/vue3'
-import ScanField from '@/Components/Rx/ScanField.vue'
+import ScanField from '@/components/Rx/ScanField.vue'
 import '../../../css/rx-monitoring.css'
 
 const props = defineProps({
