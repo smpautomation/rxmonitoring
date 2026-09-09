@@ -80,7 +80,7 @@ defineExpose({ reset, focus: () => inputEl.value?.focus() })
       <input
         ref="inputEl"
         v-model="code"
-        type="text"
+        type="password"
         class="scan-field__input rx-mono"
         :placeholder="requirePic ? 'Scan PIC badge…' : 'Scan operator badge…'"
         :disabled="disabled || resolving"
