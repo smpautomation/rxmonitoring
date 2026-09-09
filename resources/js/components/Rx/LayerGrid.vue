@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import { router, useForm } from '@inertiajs/vue3'
 import axios from 'axios'
-import ScanField from '../ScanField.vue'
+import ScanField from './ScanField.vue'
 
 const props = defineProps({
   chamberId: { type: Number, required: true },
